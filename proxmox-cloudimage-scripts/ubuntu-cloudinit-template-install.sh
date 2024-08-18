@@ -4,16 +4,17 @@ set -e
 set -o pipefail
 
 # Default values for parameters
-VMID="5001"
-VM_NAME="ubuntu-2204-cloudinit-template"
+VMID="5000"
+VM_NAME="ubuntu-cloudinit-template"
 MEMORY="2048"
 CORES="4"
 SOCKETS="1"
 CPU_TYPE="x86-64-v2-AES"
 BRIDGE="vmbr0"
 STORAGE="local-lvm"
-DISK_IMAGE="jammy-server-cloudimg-amd64.img"
-IMAGE_URL="https://cloud-images.ubuntu.com/jammy/current/$DISK_IMAGE"
+UBUNTU_VERSION=""
+DISK_IMAGE=""
+IMAGE_URL=""
 
 # Function to display usage
 usage() {
@@ -26,12 +27,13 @@ usage() {
     echo "  -t CPU_TYPE      CPU type (default: $CPU_TYPE)"
     echo "  -b BRIDGE        Network bridge (default: $BRIDGE)"
     echo "  -d STORAGE       Storage location (default: $STORAGE)"
+    echo "  -u UBUNTU_VER    Ubuntu version (default: $UBUNTU_VERSION)"
     echo "  -h               Display this help message"
     exit 1
 }
 
 # Parse command-line arguments
-while getopts "i:n:m:c:s:t:b:d:h" opt; do
+while getopts "i:n:m:c:s:t:b:d:u:h" opt; do
     case ${opt} in
         i) VMID="$OPTARG" ;;
         n) VM_NAME="$OPTARG" ;;
@@ -41,12 +43,24 @@ while getopts "i:n:m:c:s:t:b:d:h" opt; do
         t) CPU_TYPE="$OPTARG" ;;
         b) BRIDGE="$OPTARG" ;;
         d) STORAGE="$OPTARG" ;;
+        u) UBUNTU_VERSION="$OPTARG" ;;
         h) usage ;;
         *) usage ;;
     esac
 done
 
-command -v virt-customize >/dev/null 2>&1 || { echo "virt-customize is required but not installed. Install with 'apt install libguestfs-tools'." >&2; exit 1; }
+# Set the correct DISK_IMAGE and IMAGE_URL based on Ubuntu version
+case $UBUNTU_VERSION in
+    "focal") DISK_IMAGE="focal-server-cloudimg-amd64.img";;
+    "bionic") DISK_IMAGE="bionic-server-cloudimg-amd64.img";;
+    "jammy") DISK_IMAGE="jammy-server-cloudimg-amd64.img";;
+    "noble") DISK_IMAGE="noble-server-cloudimg-amd64.img";;
+    *) echo "Unsupported Ubuntu version. Please use 'focal', 'bionic', 'jammy', or 'noble'."; exit 1;;
+esac
+
+IMAGE_URL="https://cloud-images.ubuntu.com/$UBUNTU_VERSION/current/$DISK_IMAGE"
+
+command -v virt-customize >/dev/null 2>&1 || { echo "virt-customize is required but not installed. Aborting." >&2; exit 1; }
 
 should_download_image() {
     local file="$1"
@@ -83,7 +97,7 @@ create_vm_template() {
     qm set "$VMID" --serial0 socket --vga serial0 || { echo "Failed to set serial0. Aborting." >&2; exit 1; }
     qm set "$VMID" --onboot 1 || { echo "Failed to set onboot option. Aborting." >&2; exit 1; }
     qm set "$VMID" --agent enabled=1 || { echo "Failed to enable agent. Aborting." >&2; exit 1; }
-    qm set "$VMID" --tags ubuntu-22.04,cloud-init || { echo "Failed to set tags. Aborting." >&2; exit 1; }
+    qm set "$VMID" --tags ubuntu-$UBUNTU_VERSION,cloud-init || { echo "Failed to set tags. Aborting." >&2; exit 1; }
     qm template "$VMID" || { echo "Failed to convert VM to template. Aborting." >&2; exit 1; }
 }
 
@@ -92,5 +106,4 @@ customize_image
 destroy_existing_vm
 create_vm_template
 
-echo "Your template with VM ID $VMID and name $VM_NAME has been created successfully."
-
+echo "Your template for Ubuntu $UBUNTU_VERSION with VM ID $VMID and name $VM_NAME has been created successfully."

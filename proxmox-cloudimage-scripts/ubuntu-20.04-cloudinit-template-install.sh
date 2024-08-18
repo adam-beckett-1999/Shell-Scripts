@@ -7,11 +7,11 @@ set -o pipefail
 VMID="5000"
 VM_NAME="ubuntu-2004-cloudinit-template"
 MEMORY="2048"
-CORES="2"
-SOCKETS="2"
+CORES="4"
+SOCKETS="1"
 CPU_TYPE="x86-64-v2-AES"
 BRIDGE="vmbr0"
-STORAGE="storage-01-zfs-iscsi"
+STORAGE="local-lvm"
 DISK_IMAGE="focal-server-cloudimg-amd64.img"
 IMAGE_URL="https://cloud-images.ubuntu.com/focal/current/$DISK_IMAGE"
 
@@ -46,7 +46,7 @@ while getopts "i:n:m:c:s:t:b:d:h" opt; do
     esac
 done
 
-command -v virt-customize >/dev/null 2>&1 || { echo "virt-customize is required but not installed. Aborting." >&2; exit 1; }
+command -v virt-customize >/dev/null 2>&1 || { echo "virt-customize is required but not installed. Install with 'apt install libguestfs-tools'." >&2; exit 1; }
 
 should_download_image() {
     local file="$1"
