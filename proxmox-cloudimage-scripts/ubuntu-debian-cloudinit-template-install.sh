@@ -66,12 +66,12 @@ case $OS_TYPE in
         ;;
     "debian")
         case $OS_VERSION in
-            "bullseye") DISK_IMAGE="debian-11-genericcloud-amd64.qcow2" ;;
-            "bookworm") DISK_IMAGE="debian-12-genericcloud-amd64.qcow2" ;;
-            "buster") DISK_IMAGE="debian-10-genericcloud-amd64.qcow2" ;;
+            "bullseye") DISK_IMAGE="debian-11-generic-amd64.qcow2" ;;
+            "bookworm") DISK_IMAGE="debian-12-generic-amd64.qcow2" ;;
+            "buster") DISK_IMAGE="debian-10-generic-amd64.qcow2" ;;
             *) echo "Unsupported Debian version. Please use 'buster', 'bullseye', or 'bookworm'."; exit 1 ;;
         esac
-        IMAGE_URL="https://cloud.debian.org/images/cloud/$OS_VERSION/daily/latest/$DISK_IMAGE"
+        IMAGE_URL="https://cloud.debian.org/images/cloud/$OS_VERSION/latest/$DISK_IMAGE"
         ;;
     *)
         echo "Unsupported OS type. Please use 'ubuntu' or 'debian'."
