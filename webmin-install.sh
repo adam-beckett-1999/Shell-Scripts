@@ -17,8 +17,5 @@ sudo apt install --install-recommends webmin -y
 sudo systemctl enable webmin
 sudo systemctl start webmin
 
-# Check the status of the Webmin service
-sudo systemctl status webmin
-
 # Remove the script
 sudo rm setup-repos.sh
