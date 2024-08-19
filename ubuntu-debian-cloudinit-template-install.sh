@@ -1,4 +1,5 @@
 #!/bin/bash
+# This script is designed to be run on a proxmox host.
 
 set -e
 set -o pipefail
