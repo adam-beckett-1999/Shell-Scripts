@@ -91,25 +91,39 @@ should_download_image() {
 }
 
 download_image() {
+    echo "Checking if $DISK_IMAGE needs to be downloaded..."
     if should_download_image "$DISK_IMAGE"; then
+        echo "Downloading $DISK_IMAGE from $IMAGE_URL..."
         rm -f "$DISK_IMAGE"
         wget -q "$IMAGE_URL" || { echo "Failed to download $DISK_IMAGE. Aborting." >&2; exit 1; }
+    else
+        echo "$DISK_IMAGE is up to date. No need to download."
     fi
 }
 
 customize_image() {
+    echo "Customizing the disk image $DISK_IMAGE by installing qemu-guest-agent..."
     virt-customize -a "$DISK_IMAGE" --install qemu-guest-agent || { echo "Failed to customize the disk image. Aborting." >&2; exit 1; }
 }
 
 destroy_existing_vm() {
+    echo "Checking if a VM with ID $VMID already exists..."
     if qm list | grep -qw "$VMID"; then
+        echo "Destroying existing VM with ID $VMID..."
         qm destroy "$VMID" || { echo "Failed to destroy existing VM with ID $VMID. Aborting." >&2; exit 1; }
+    else
+        echo "No existing VM with ID $VMID found."
     fi
 }
 
 create_vm_template() {
+    echo "Creating VM template with ID $VMID and name $VM_NAME..."
     qm create "$VMID" --name "$VM_NAME" --memory "$MEMORY" --cores "$CORES" --sockets "$SOCKETS" --cpu cputype="$CPU_TYPE" --net0 virtio,bridge="$BRIDGE",firewall=0 || { echo "Failed to create VM. Aborting." >&2; exit 1; }
+    
+    echo "Importing disk image $DISK_IMAGE to storage $STORAGE..."
     qm importdisk "$VMID" "$DISK_IMAGE" "$STORAGE" || { echo "Failed to import disk. Aborting." >&2; exit 1; }
+    
+    echo "Configuring VM disk and boot options..."
     qm set "$VMID" --scsihw virtio-scsi-pci --scsi0 "$STORAGE":vm-"$VMID"-disk-0 || { echo "Failed to set disk. Aborting." >&2; exit 1; }
     qm set "$VMID" --boot c --bootdisk scsi0 || { echo "Failed to set boot options. Aborting." >&2; exit 1; }
     qm set "$VMID" --ide2 "$STORAGE":cloudinit || { echo "Failed to set IDE options. Aborting." >&2; exit 1; }
@@ -117,8 +131,13 @@ create_vm_template() {
     qm set "$VMID" --onboot 1 || { echo "Failed to set onboot option. Aborting." >&2; exit 1; }
     qm set "$VMID" --agent enabled=1 || { echo "Failed to enable agent. Aborting." >&2; exit 1; }
     qm set "$VMID" --tags $OS_TYPE-$OS_VERSION,cloud-init || { echo "Failed to set tags. Aborting." >&2; exit 1; }
+    
+    echo "Converting VM with ID $VMID to a template..."
     qm template "$VMID" || { echo "Failed to convert VM to template. Aborting." >&2; exit 1; }
 }
+
+# Execution starts here
+echo "Starting the process to create a cloud-init VM template for $OS_TYPE $OS_VERSION..."
 
 download_image
 customize_image
