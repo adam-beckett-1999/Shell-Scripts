@@ -4,6 +4,12 @@ This repository contains a collection of shell scripts i've thrown together. Fee
 
 ---
 
+- qemu-guest-agent-install.sh
+- webmin-install.sh
+- ubuntu-debian-cloudinit-template-install.sh
+
+---
+
 ## CloudImage Template Install Scripts
 
 These shell scripts are designed to automate the creation and management of cloud-init enabled virtual machine templates. These scripts are intended for use with Proxmox VE (PVE) and are highly customizable.
