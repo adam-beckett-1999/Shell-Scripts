@@ -5,7 +5,6 @@ This repository contains a collection of shell scripts i've thrown together. Fee
 ---
 
 - qemu-guest-agent-install.sh
-- webmin-install.sh
 - ubuntu-debian-cloudinit-template-install.sh
 
 ---
