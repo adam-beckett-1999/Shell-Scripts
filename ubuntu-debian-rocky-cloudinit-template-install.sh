@@ -29,8 +29,8 @@ usage() {
     echo "  -t CPU_TYPE      CPU type (default: $CPU_TYPE)"
     echo "  -b BRIDGE        Network bridge (default: $BRIDGE)"
     echo "  -d STORAGE       Storage location (default: $STORAGE)"
-    echo "  -o OS_TYPE       OS type (ubuntu or debian)"
-    echo "  -v OS_VERSION    OS version (bionic, focal, jammy, noble for Ubuntu. buster, bullseye, bookworm for Debian.)"
+    echo "  -o OS_TYPE       OS type (ubuntu, debian, rocky)"
+    echo "  -v OS_VERSION    OS version (bionic, focal, jammy, noble for Ubuntu. buster, bullseye, bookworm for Debian. 8, 9 for Rocky Linux.)"
     echo "  -h               Display this help message"
     exit 1
 }
@@ -74,8 +74,16 @@ case $OS_TYPE in
         esac
         IMAGE_URL="https://cloud.debian.org/images/cloud/$OS_VERSION/latest/$DISK_IMAGE"
         ;;
+    "rocky")
+        case $OS_VERSION in
+            "8") DISK_IMAGE="Rocky-8-GenericCloud.latest.x86_64.qcow2" ;;
+            "9") DISK_IMAGE="Rocky-9-GenericCloud.latest.x86_64.qcow2" ;;
+            *) echo "Unsupported Rocky Linux version. Please use '8' or '9'."; exit 1 ;;
+        esac
+        IMAGE_URL="https://dl.rockylinux.org/pub/rocky/$OS_VERSION/images/x86_64/$DISK_IMAGE"
+        ;;
     *)
-        echo "Unsupported OS type. Please use 'ubuntu' or 'debian'."
+        echo "Unsupported OS type. Please use 'ubuntu', 'debian', or 'rocky'."
         exit 1
         ;;
 esac
