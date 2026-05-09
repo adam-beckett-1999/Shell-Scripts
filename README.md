@@ -4,6 +4,11 @@ This repository contains a collection of shell scripts i've thrown together. Fee
 
 ---
 
+- qemu-guest-agent-install.sh
+- ubuntu-debian-cloudinit-template-install.sh
+
+---
+
 ## Quick Download Command
 
 To download the latest version of this script directly to your Proxmox host:
@@ -12,11 +17,6 @@ To download the latest version of this script directly to your Proxmox host:
 curl -O https://raw.githubusercontent.com/adam-beckett-1999/Shell-Scripts/main/ubuntu-debian-rocky-cloudinit-template-install.sh
 chmod +x ubuntu-debian-rocky-cloudinit-template-install.sh
 ```
-
----
-
-- qemu-guest-agent-install.sh
-- ubuntu-debian-cloudinit-template-install.sh
 
 ---
 
