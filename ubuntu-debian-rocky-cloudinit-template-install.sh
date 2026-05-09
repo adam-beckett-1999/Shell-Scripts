@@ -30,7 +30,7 @@ usage() {
     echo "  -b BRIDGE        Network bridge (default: $BRIDGE)"
     echo "  -d STORAGE       Storage location (default: $STORAGE)"
     echo "  -o OS_TYPE       OS type (ubuntu, debian, rocky)"
-    echo "  -v OS_VERSION    OS version (bionic, focal, jammy, noble, oracular for Ubuntu. buster, bullseye, bookworm, trixie for Debian. 8, 9 for Rocky Linux.)"
+    echo "  -v OS_VERSION    OS version (Ubuntu: 18.04, 18.10, 20.04, 20.10, 22.04, 22.10, 23.04, 23.10, 24.04, 24.10, 25.04, 25.10, 26.04. Debian: 10, 11, 12, 13. Rocky Linux: 8, 9, 10)"
     echo "  -h               Display this help message"
     exit 1
 }
@@ -56,31 +56,42 @@ done
 # Set the correct DISK_IMAGE and IMAGE_URL based on OS type and version
 case $OS_TYPE in
     "ubuntu")
+        # Map Ubuntu version to codename and image
         case $OS_VERSION in
-            "focal") DISK_IMAGE="focal-server-cloudimg-amd64.img" ;;
-            "bionic") DISK_IMAGE="bionic-server-cloudimg-amd64.img" ;;
-            "jammy") DISK_IMAGE="jammy-server-cloudimg-amd64.img" ;;
-            "noble") DISK_IMAGE="noble-server-cloudimg-amd64.img" ;;
-            "oracular") DISK_IMAGE="oracular-server-cloudimg-amd64.img" ;;
-            *) echo "Unsupported Ubuntu version. Please use 'focal', 'bionic', 'jammy', 'noble', or 'oracular'."; exit 1 ;;
+            "18.04") CODENAME="bionic"; DISK_IMAGE="bionic-server-cloudimg-amd64.img" ;;
+            "18.10") CODENAME="cosmic"; DISK_IMAGE="cosmic-server-cloudimg-amd64.img" ;;
+            "20.04") CODENAME="focal"; DISK_IMAGE="focal-server-cloudimg-amd64.img" ;;
+            "20.10") CODENAME="groovy"; DISK_IMAGE="groovy-server-cloudimg-amd64.img" ;;
+            "22.04") CODENAME="jammy"; DISK_IMAGE="jammy-server-cloudimg-amd64.img" ;;
+            "22.10") CODENAME="kinetic"; DISK_IMAGE="kinetic-server-cloudimg-amd64.img" ;;
+            "23.04") CODENAME="lunar"; DISK_IMAGE="lunar-server-cloudimg-amd64.img" ;;
+            "23.10") CODENAME="mantic"; DISK_IMAGE="mantic-server-cloudimg-amd64.img" ;;
+            "24.04") CODENAME="noble"; DISK_IMAGE="noble-server-cloudimg-amd64.img" ;;
+            "24.10") CODENAME="oracular"; DISK_IMAGE="oracular-server-cloudimg-amd64.img" ;;
+            "25.04") CODENAME="plucky"; DISK_IMAGE="plucky-server-cloudimg-amd64.img" ;;
+            "25.10") CODENAME="questing"; DISK_IMAGE="questing-server-cloudimg-amd64.img" ;;
+            "26.04") CODENAME="resolute"; DISK_IMAGE="resolute-server-cloudimg-amd64.img" ;;
+            *) echo "Unsupported Ubuntu version. Please use one of: 18.04, 18.10, 20.04, 20.10, 22.04, 22.10, 23.04, 23.10, 24.04, 24.10, 25.04, 25.10, 26.04."; exit 1 ;;
         esac
-        IMAGE_URL="https://cloud-images.ubuntu.com/$OS_VERSION/current/$DISK_IMAGE"
+        IMAGE_URL="https://cloud-images.ubuntu.com/$CODENAME/current/$DISK_IMAGE"
         ;;
     "debian")
+        # Map Debian major version to codename and image
         case $OS_VERSION in
-            "bullseye") DISK_IMAGE="debian-11-generic-amd64.qcow2" ;;
-            "bookworm") DISK_IMAGE="debian-12-generic-amd64.qcow2" ;;
-            "buster") DISK_IMAGE="debian-10-generic-amd64.qcow2" ;;
-            "trixie") DISK_IMAGE="debian-13-generic-amd64.qcow2" ;;
-            *) echo "Unsupported Debian version. Please use 'buster', 'bullseye', 'bookworm', or 'trixie'."; exit 1 ;;
+            "10") CODENAME="buster"; DISK_IMAGE="debian-10-generic-amd64.qcow2" ;;
+            "11") CODENAME="bullseye"; DISK_IMAGE="debian-11-generic-amd64.qcow2" ;;
+            "12") CODENAME="bookworm"; DISK_IMAGE="debian-12-generic-amd64.qcow2" ;;
+            "13") CODENAME="trixie"; DISK_IMAGE="debian-13-generic-amd64.qcow2" ;;
+            *) echo "Unsupported Debian version. Please use '10', '11', '12', or '13'."; exit 1 ;;
         esac
-        IMAGE_URL="https://cloud.debian.org/images/cloud/$OS_VERSION/latest/$DISK_IMAGE"
+        IMAGE_URL="https://cloud.debian.org/images/cloud/$CODENAME/latest/$DISK_IMAGE"
         ;;
     "rocky")
         case $OS_VERSION in
             "8") DISK_IMAGE="Rocky-8-GenericCloud.latest.x86_64.qcow2" ;;
             "9") DISK_IMAGE="Rocky-9-GenericCloud.latest.x86_64.qcow2" ;;
-            *) echo "Unsupported Rocky Linux version. Please use '8' or '9'."; exit 1 ;;
+            "10") DISK_IMAGE="Rocky-10-GenericCloud-Base.latest.x86_64.qcow2" ;;
+            *) echo "Unsupported Rocky Linux version. Please use '8', '9', or '10'."; exit 1 ;;
         esac
         IMAGE_URL="https://dl.rockylinux.org/pub/rocky/$OS_VERSION/images/x86_64/$DISK_IMAGE"
         ;;
