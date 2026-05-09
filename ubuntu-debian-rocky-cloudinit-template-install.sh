@@ -309,7 +309,7 @@ if whiptail --title "Cloud-Init User Setup" --yesno "Would you like to set a def
     fi
 
     # Additional cloud-init network config
-    if whiptail --title "Cloud-Init Network Setup" --yesno "Would you like to set DNS domain, DNS servers, or IP config for this template?" 12 70; then
+    if whiptail --title "Cloud-Init Network Setup" --yesno "Would you like to set DNS domain and servers for this template?" 12 70; then
         # DNS domain
         CLOUDINIT_DOMAIN=$(whiptail --inputbox "Enter DNS search domain (leave blank to skip):" 10 70 "" --title "DNS Domain" 3>&1 1>&2 2>&3)
         if [ -n "$CLOUDINIT_DOMAIN" ]; then
@@ -319,14 +319,6 @@ if whiptail --title "Cloud-Init User Setup" --yesno "Would you like to set a def
         CLOUDINIT_DNS=$(whiptail --inputbox "Enter DNS server(s), comma-separated (e.g. 1.1.1.1,8.8.8.8), leave blank to skip:" 10 70 "" --title "DNS Servers" 3>&1 1>&2 2>&3)
         if [ -n "$CLOUDINIT_DNS" ]; then
             qm set "$VMID" --nameserver "$CLOUDINIT_DNS"
-        fi
-        # IP config
-        if whiptail --title "IP Configuration" --yesno "Would you like to set a static IP config? (No = DHCP)" 10 70; then
-            IPADDR=$(whiptail --inputbox "Enter static IP address (e.g. 192.168.1.100/24):" 10 70 "" --title "Static IP Address" 3>&1 1>&2 2>&3)
-            GATEWAY=$(whiptail --inputbox "Enter gateway IP address (e.g. 192.168.1.1):" 10 70 "" --title "Gateway" 3>&1 1>&2 2>&3)
-            qm set "$VMID" --ipconfig0 "ip=$IPADDR,gw=$GATEWAY"
-        else
-            qm set "$VMID" --ipconfig0 "ip=dhcp"
         fi
     fi
     echo "Cloud-init settings applied."
