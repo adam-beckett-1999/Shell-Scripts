@@ -18,44 +18,59 @@ These shell scripts are designed to automate the creation and management of clou
 ### Prerequisites
 
 - **Proxmox VE (PVE)**: This script is designed for use in a Proxmox VE environment, specifically to be run on a Proxmox host.
-- **virt-customize**: Part of the `libguestfs` package, used to customize virtual machine images. You can install this with the following command: 'apt install libguestfs-tools'.
+- **virt-customize**: Part of the `libguestfs` package, used to customize virtual machine images. You can install this with the following command: `apt install libguestfs-tools`. You'll be prompted to install when the script is run in Interactive mode.
+- **whiptail**: Used for the interactive menu. Install with `apt install whiptail` if not already present.
 
-### Script Parameters
+### Interactive Menu & Workflow
 
-The script accepts several command-line arguments, allowing you to customize the virtual machine template creation process. Below are the available options:
+If you run the script with no arguments, an interactive menu will guide you through all configuration options:
 
-- `-i VMID`: The unique ID for the virtual machine. Default is `5000`.
-- `-n NAME`: The name of the virtual machine template. Default is `linux-cloudinit-template`.
+1. **VM Settings**: Set VM ID, memory, CPU, sockets, CPU type, network bridge, and storage.
+2. **OS Selection**: Choose the OS type and version (Ubuntu, Debian, Rocky Linux).
+3. **Template Name**: The script auto-generates a default template name in the format `DISTRO-VERSION-TEMPLATE` (e.g., `UBUNTU-24.04-TEMPLATE`). You can accept or override this.
+4. **Cloud-Init User Options**: Optionally set a default username, password, and SSH key for the template. You can skip the SSH key if desired.
+5. **Cloud-Init Network Options**: Optionally set DNS search domain and DNS servers.
+6. The script downloads the correct cloud image, customizes it, and creates the Proxmox template with your settings.
+
+### Command-Line Flags
+
+You can use the following flags to customize the template creation process via command-line:
+
+- `-i VMID`: The unique ID for the virtual machine. Default is `1000`.
+- `-n NAME`: The name of the virtual machine template. Default is auto-generated (e.g., `UBUNTU-24.04-TEMPLATE`).
 - `-m MEMORY`: The amount of memory (in MB) allocated to the virtual machine. Default is `2048`.
-- `-c CORES`: The number of CPU cores. Default is `4`.
+- `-c CORES`: The number of CPU cores. Default is `2`.
 - `-s SOCKETS`: The number of CPU sockets. Default is `1`.
 - `-t CPU_TYPE`: The CPU type. Default is `x86-64-v2-AES`.
 - `-b BRIDGE`: The network bridge to be used. Default is `vmbr0`.
 - `-d STORAGE`: The storage location for the virtual machine disk. Default is `local-lvm`.
-- `-o OS_TYPE`: The operating system type (`ubuntu` or `debian`).
-- `-v OS_VERSION`: The version of the operating system (e.g., `focal` for Ubuntu 20.04, `bullseye` for Debian 11).
+- `-o OS_TYPE`: The operating system type (`ubuntu`, `debian`, or `rocky`).
+- `-v OS_VERSION`: The version of the operating system (e.g., `24.04` for Ubuntu 24.04, `12` for Debian 12).
+- `-h`: Display the help message.
 
-### Example Usage
-
-Here are a few examples of how to use the script:
-
-1. **Create a template for Ubuntu Focal (20.04) with default settings:**
+### Example Usage (Interactive)
 
 ```bash
-   ./ubuntu-debian-cloudinit-template-install.sh -o ubuntu -v focal
+./ubuntu-debian-rocky-cloudinit-template-install.sh
 ```
 
-2. **Create a template for Ubuntu Jammy (22.04) with custom VM ID and name:**
+### Example Usage (Command-Line)
 
 ```bash
-   ./ubuntu-debian-cloudinit-template-install.sh -o ubuntu -v jammy -i 6000 -n ubuntu-jammy-template
+./ubuntu-debian-rocky-cloudinit-template-install.sh -o ubuntu -v 24.04 -i 6000 -n UBUNTU-24.04-TEMPLATE -m 4096 -c 4 -t host
 ```
 
-3. **Create a template for Debian Bullseye (11) with custom memory and CPU settings:**
+### Cloud-Init Options
 
-```bash
-   ./ubuntu-debian-cloudinit-template-install.sh -o debian -v bullseye -i 6100 -n debian-bullseye-template -m 4096 -c 4 -t host
-```
+After template creation, you will be prompted to optionally set:
+
+- **Username** (default: root)
+- **Password** (optional)
+- **SSH Key** (optional, can be skipped)
+- **DNS Search Domain** (optional)
+- **DNS Servers** (optional, comma-separated)
+
+All these settings are applied to the template using Proxmox's `qm set` and are available to VMs cloned from the template.
 
 ## Contributing
 
