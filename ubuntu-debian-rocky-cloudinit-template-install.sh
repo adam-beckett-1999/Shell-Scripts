@@ -221,7 +221,10 @@ download_image() {
     if should_download_image "$DISK_IMAGE"; then
         echo "Downloading $DISK_IMAGE from $IMAGE_URL..."
         rm -f "$DISK_IMAGE"
-        wget -q "$IMAGE_URL" || { echo "Failed to download $DISK_IMAGE. Aborting." >&2; exit 1; }
+        # Download to a temp file, then rename to $DISK_IMAGE
+        TEMP_IMG="tmp_download.img"
+        wget -q -O "$TEMP_IMG" "$IMAGE_URL" || { echo "Failed to download $IMAGE_URL. Aborting." >&2; exit 1; }
+        mv "$TEMP_IMG" "$DISK_IMAGE"
     else
         echo "$DISK_IMAGE is up to date. No need to download."
     fi
