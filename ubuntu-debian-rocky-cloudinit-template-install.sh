@@ -42,7 +42,6 @@ if [ $# -eq 0 ]; then
 
 
     VMID=$(whiptail --inputbox "Enter VM ID (e.g. 1000, must be unique on this Proxmox node)" 10 70 "$VMID" --title "VM ID" 3>&1 1>&2 2>&3)
-    VM_NAME=$(whiptail --inputbox "Enter VM Name (e.g. ubuntu-cloudinit-template)" 10 70 "$VM_NAME" --title "VM Name" 3>&1 1>&2 2>&3)
     MEMORY=$(whiptail --inputbox "Enter Memory in MB (e.g. 2048 for 2GB)" 10 70 "$MEMORY" --title "Memory (MB)" 3>&1 1>&2 2>&3)
     CORES=$(whiptail --inputbox "Enter Number of CPU Cores (e.g. 2, 4, 8)" 10 70 "$CORES" --title "CPU Cores" 3>&1 1>&2 2>&3)
     SOCKETS=$(whiptail --inputbox "Enter Number of CPU Sockets (usually 1 unless you want NUMA)" 10 70 "$SOCKETS" --title "CPU Sockets" 3>&1 1>&2 2>&3)
@@ -120,6 +119,11 @@ if [ $# -eq 0 ]; then
                 3>&1 1>&2 2>&3)
             ;;
     esac
+
+    # Generate default template name: {DISTRO}-{VERSION}-TEMPLATE (all caps)
+    DISTRO_NAME=$(echo "$OS_TYPE" | tr '[:lower:]' '[:upper:]')
+    DEFAULT_TEMPLATE_NAME="${DISTRO_NAME}-${OS_VERSION}-TEMPLATE"
+    VM_NAME=$(whiptail --inputbox "Enter VM Name for the template (default: $DEFAULT_TEMPLATE_NAME)" 10 70 "$DEFAULT_TEMPLATE_NAME" --title "VM Name" 3>&1 1>&2 2>&3)
 fi
 
 # Function to display usage
