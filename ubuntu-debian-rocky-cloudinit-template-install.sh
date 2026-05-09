@@ -30,7 +30,7 @@ if [ $# -eq 0 ]; then
     if ! command -v virt-customize >/dev/null 2>&1; then
         whiptail --title "Missing Dependency" --msgbox "virt-customize is required to customize images. You will be prompted to install it." 10 60
         if whiptail --title "Install virt-customize" --yesno "Do you want to install virt-customize (libguestfs-tools) now?" 10 60; then
-            sudo apt update && sudo apt install -y libguestfs-tools || {
+            apt update && apt install -y libguestfs-tools || {
                 whiptail --title "Install Failed" --msgbox "Failed to install virt-customize. Exiting." 10 60
                 exit 1
             }
