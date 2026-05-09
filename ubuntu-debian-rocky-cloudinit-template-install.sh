@@ -177,7 +177,7 @@ case $OS_TYPE in
             "26.04") CODENAME="resolute"; DISK_IMAGE="resolute-server-cloudimg-amd64.img" ;;
             *) echo "Unsupported Ubuntu version. Please use one of: 18.04, 18.10, 20.04, 20.10, 22.04, 22.10, 23.04, 23.10, 24.04, 24.10, 25.04, 25.10, 26.04."; exit 1 ;;
         esac
-        IMAGE_URL="https://cloud-images.ubuntu.com/$CODENAME/current/$DISK_IMAGE"
+        IMAGE_URL="https://cloud-images.ubuntu.com/releases/$CODENAME/release/ubuntu-$OS_VERSION-server-cloudimg-amd64.img"
         ;;
     "debian")
         # Map Debian major version to codename and image
