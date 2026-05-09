@@ -6,10 +6,10 @@ set -o pipefail
 
 
 # Default values for parameters
-VMID="5000"
+VMID="1000"
 VM_NAME="linux-cloudinit-template"
 MEMORY="2048"
-CORES="4"
+CORES="2"
 SOCKETS="1"
 CPU_TYPE="x86-64-v2-AES"
 BRIDGE="vmbr0"
@@ -24,6 +24,20 @@ if [ $# -eq 0 ]; then
     if ! command -v whiptail >/dev/null 2>&1; then
         echo "whiptail is required for the interactive menu. Install it with: apt install whiptail" >&2
         exit 1
+    fi
+
+    # Check for virt-customize and offer to install if missing
+    if ! command -v virt-customize >/dev/null 2>&1; then
+        whiptail --title "Missing Dependency" --msgbox "virt-customize is required to customize images. You will be prompted to install it." 10 60
+        if whiptail --title "Install virt-customize" --yesno "Do you want to install virt-customize (libguestfs-tools) now?" 10 60; then
+            sudo apt update && sudo apt install -y libguestfs-tools || {
+                whiptail --title "Install Failed" --msgbox "Failed to install virt-customize. Exiting." 10 60
+                exit 1
+            }
+        else
+            whiptail --title "Dependency Required" --msgbox "virt-customize is required. Exiting." 10 60
+            exit 1
+        fi
     fi
 
     VMID=$(whiptail --inputbox "Enter VM ID" 8 60 "$VMID" --title "VM ID" 3>&1 1>&2 2>&3)
