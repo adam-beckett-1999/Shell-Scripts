@@ -281,9 +281,11 @@ echo "Your template for $OS_TYPE $OS_VERSION with VM ID $VMID and name $VM_NAME 
 
 # Post-template cloud-init configuration
 if whiptail --title "Cloud-Init User Setup" --yesno "Would you like to set a default username, password, and SSH key for this template?" 12 70; then
+
     CLOUDINIT_USER=$(whiptail --inputbox "Enter the default username for cloud-init (e.g. root):" 10 70 "root" --title "Cloud-Init Username" 3>&1 1>&2 2>&3)
     CLOUDINIT_PASS=$(whiptail --passwordbox "Enter the default password for $CLOUDINIT_USER (leave blank for no password):" 10 70 --title "Cloud-Init Password" 3>&1 1>&2 2>&3)
-    if whiptail --title "SSH Key" --yesno "Would you like to add an SSH public key for $CLOUDINIT_USER?" 10 70; then
+    CLOUDINIT_SSHKEY=""
+    if whiptail --title "SSH Key" --yesno "Would you like to set an SSH public key for $CLOUDINIT_USER in cloud-init?" 10 70; then
         if whiptail --title "SSH Key Input" --yesno "Paste the SSH public key? (No = load from file)" 10 70; then
             CLOUDINIT_SSHKEY=$(whiptail --inputbox "Paste the SSH public key for $CLOUDINIT_USER:" 12 70 "" --title "SSH Public Key" 3>&1 1>&2 2>&3)
         else
@@ -295,8 +297,6 @@ if whiptail --title "Cloud-Init User Setup" --yesno "Would you like to set a def
                 CLOUDINIT_SSHKEY=""
             fi
         fi
-    else
-        CLOUDINIT_SSHKEY=""
     fi
 
     echo "Applying cloud-init settings to template..."
@@ -306,6 +306,28 @@ if whiptail --title "Cloud-Init User Setup" --yesno "Would you like to set a def
     fi
     if [ -n "$CLOUDINIT_SSHKEY" ]; then
         qm set "$VMID" --sshkey <(echo "$CLOUDINIT_SSHKEY")
+    fi
+
+    # Additional cloud-init network config
+    if whiptail --title "Cloud-Init Network Setup" --yesno "Would you like to set DNS domain, DNS servers, or IP config for this template?" 12 70; then
+        # DNS domain
+        CLOUDINIT_DOMAIN=$(whiptail --inputbox "Enter DNS search domain (leave blank to skip):" 10 70 "" --title "DNS Domain" 3>&1 1>&2 2>&3)
+        if [ -n "$CLOUDINIT_DOMAIN" ]; then
+            qm set "$VMID" --searchdomain "$CLOUDINIT_DOMAIN"
+        fi
+        # DNS servers
+        CLOUDINIT_DNS=$(whiptail --inputbox "Enter DNS server(s), comma-separated (e.g. 1.1.1.1,8.8.8.8), leave blank to skip:" 10 70 "" --title "DNS Servers" 3>&1 1>&2 2>&3)
+        if [ -n "$CLOUDINIT_DNS" ]; then
+            qm set "$VMID" --nameserver "$CLOUDINIT_DNS"
+        fi
+        # IP config
+        if whiptail --title "IP Configuration" --yesno "Would you like to set a static IP config? (No = DHCP)" 10 70; then
+            IPADDR=$(whiptail --inputbox "Enter static IP address (e.g. 192.168.1.100/24):" 10 70 "" --title "Static IP Address" 3>&1 1>&2 2>&3)
+            GATEWAY=$(whiptail --inputbox "Enter gateway IP address (e.g. 192.168.1.1):" 10 70 "" --title "Gateway" 3>&1 1>&2 2>&3)
+            qm set "$VMID" --ipconfig0 "ip=$IPADDR,gw=$GATEWAY"
+        else
+            qm set "$VMID" --ipconfig0 "ip=dhcp"
+        fi
     fi
     echo "Cloud-init settings applied."
 fi
