@@ -40,14 +40,45 @@ if [ $# -eq 0 ]; then
         fi
     fi
 
-    VMID=$(whiptail --inputbox "Enter VM ID" 8 60 "$VMID" --title "VM ID" 3>&1 1>&2 2>&3)
-    VM_NAME=$(whiptail --inputbox "Enter VM Name" 8 60 "$VM_NAME" --title "VM Name" 3>&1 1>&2 2>&3)
-    MEMORY=$(whiptail --inputbox "Enter Memory (MB)" 8 60 "$MEMORY" --title "Memory" 3>&1 1>&2 2>&3)
-    CORES=$(whiptail --inputbox "Enter Number of CPU Cores" 8 60 "$CORES" --title "CPU Cores" 3>&1 1>&2 2>&3)
-    SOCKETS=$(whiptail --inputbox "Enter Number of CPU Sockets" 8 60 "$SOCKETS" --title "CPU Sockets" 3>&1 1>&2 2>&3)
-    CPU_TYPE=$(whiptail --inputbox "Enter CPU Type" 8 60 "$CPU_TYPE" --title "CPU Type" 3>&1 1>&2 2>&3)
-    BRIDGE=$(whiptail --inputbox "Enter Network Bridge" 8 60 "$BRIDGE" --title "Network Bridge" 3>&1 1>&2 2>&3)
-    STORAGE=$(whiptail --inputbox "Enter Storage Location" 8 60 "$STORAGE" --title "Storage" 3>&1 1>&2 2>&3)
+
+    VMID=$(whiptail --inputbox "Enter VM ID (e.g. 1000, must be unique on this Proxmox node)" 10 70 "$VMID" --title "VM ID" 3>&1 1>&2 2>&3)
+    VM_NAME=$(whiptail --inputbox "Enter VM Name (e.g. ubuntu-cloudinit-template)" 10 70 "$VM_NAME" --title "VM Name" 3>&1 1>&2 2>&3)
+    MEMORY=$(whiptail --inputbox "Enter Memory in MB (e.g. 2048 for 2GB)" 10 70 "$MEMORY" --title "Memory (MB)" 3>&1 1>&2 2>&3)
+    CORES=$(whiptail --inputbox "Enter Number of CPU Cores (e.g. 2, 4, 8)" 10 70 "$CORES" --title "CPU Cores" 3>&1 1>&2 2>&3)
+    SOCKETS=$(whiptail --inputbox "Enter Number of CPU Sockets (usually 1 unless you want NUMA)" 10 70 "$SOCKETS" --title "CPU Sockets" 3>&1 1>&2 2>&3)
+
+    CPU_TYPE=$(whiptail --title "Select CPU Type" --menu "Choose a CPU type.\n\nProxmox options: 'host' (match host CPU), 'x86-64-v2-AES' (default), 'kvm64', 'qemu64', 'EPYC', 'EPYC-v4', 'Skylake-Server', etc.\n\nFor best performance, use 'host' or 'x86-64-v2-AES' on modern hardware." 20 70 8 \
+        "x86-64-v2-AES" "Modern default (recommended)" \
+        "host" "Match host CPU (best perf, may break migration)" \
+        "kvm64" "Legacy (max compatibility, slow)" \
+        "qemu64" "Legacy (max compatibility, slow)" \
+        "EPYC" "AMD EPYC" \
+        "EPYC-v4" "AMD EPYC v4" \
+        "Skylake-Server" "Intel Skylake Server" \
+        "Custom" "Enter custom value" \
+        3>&1 1>&2 2>&3)
+    if [ "$CPU_TYPE" = "Custom" ]; then
+        CPU_TYPE=$(whiptail --inputbox "Enter custom CPU type string (see Proxmox docs)" 10 70 "x86-64-v2-AES" --title "Custom CPU Type" 3>&1 1>&2 2>&3)
+    fi
+
+    BRIDGE=$(whiptail --title "Select Network Bridge" --menu "Choose the Proxmox network bridge to use.\n\nCommon options: vmbr0 (default), vmbr1, etc.\nCheck your Proxmox network config for available bridges." 15 70 4 \
+        "vmbr0" "Default bridge (most common)" \
+        "vmbr1" "Secondary bridge (if configured)" \
+        "Custom" "Enter custom bridge name" \
+        3>&1 1>&2 2>&3)
+    if [ "$BRIDGE" = "Custom" ]; then
+        BRIDGE=$(whiptail --inputbox "Enter custom bridge name (e.g. vmbr2)" 10 70 "vmbr0" --title "Custom Bridge" 3>&1 1>&2 2>&3)
+    fi
+
+    STORAGE=$(whiptail --title "Select Storage Location" --menu "Choose the Proxmox storage target for the VM disk.\n\nCommon options: local-lvm (LVM thin pool), local-zfs (ZFS pool), local (directory), or your custom storage IDs." 15 70 4 \
+        "local-lvm" "LVM thin pool (default)" \
+        "local-zfs" "ZFS pool" \
+        "local" "Directory storage" \
+        "Custom" "Enter custom storage ID" \
+        3>&1 1>&2 2>&3)
+    if [ "$STORAGE" = "Custom" ]; then
+        STORAGE=$(whiptail --inputbox "Enter custom storage ID (see Proxmox Storage view)" 10 70 "local-lvm" --title "Custom Storage" 3>&1 1>&2 2>&3)
+    fi
 
     OS_TYPE=$(whiptail --title "Select OS Type" --menu "Choose the OS type:" 15 60 4 \
         "ubuntu" "Ubuntu" \
