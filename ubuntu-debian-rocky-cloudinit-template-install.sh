@@ -30,7 +30,7 @@ usage() {
     echo "  -b BRIDGE        Network bridge (default: $BRIDGE)"
     echo "  -d STORAGE       Storage location (default: $STORAGE)"
     echo "  -o OS_TYPE       OS type (ubuntu, debian, rocky)"
-    echo "  -v OS_VERSION    OS version (bionic, focal, jammy, noble for Ubuntu. buster, bullseye, bookworm for Debian. 8, 9 for Rocky Linux.)"
+    echo "  -v OS_VERSION    OS version (bionic, focal, jammy, noble, oracular for Ubuntu. buster, bullseye, bookworm, trixie for Debian. 8, 9 for Rocky Linux.)"
     echo "  -h               Display this help message"
     exit 1
 }
@@ -61,7 +61,8 @@ case $OS_TYPE in
             "bionic") DISK_IMAGE="bionic-server-cloudimg-amd64.img" ;;
             "jammy") DISK_IMAGE="jammy-server-cloudimg-amd64.img" ;;
             "noble") DISK_IMAGE="noble-server-cloudimg-amd64.img" ;;
-            *) echo "Unsupported Ubuntu version. Please use 'focal', 'bionic', 'jammy', or 'noble'."; exit 1 ;;
+            "oracular") DISK_IMAGE="oracular-server-cloudimg-amd64.img" ;;
+            *) echo "Unsupported Ubuntu version. Please use 'focal', 'bionic', 'jammy', 'noble', or 'oracular'."; exit 1 ;;
         esac
         IMAGE_URL="https://cloud-images.ubuntu.com/$OS_VERSION/current/$DISK_IMAGE"
         ;;
@@ -70,7 +71,8 @@ case $OS_TYPE in
             "bullseye") DISK_IMAGE="debian-11-generic-amd64.qcow2" ;;
             "bookworm") DISK_IMAGE="debian-12-generic-amd64.qcow2" ;;
             "buster") DISK_IMAGE="debian-10-generic-amd64.qcow2" ;;
-            *) echo "Unsupported Debian version. Please use 'buster', 'bullseye', or 'bookworm'."; exit 1 ;;
+            "trixie") DISK_IMAGE="debian-13-generic-amd64.qcow2" ;;
+            *) echo "Unsupported Debian version. Please use 'buster', 'bullseye', 'bookworm', or 'trixie'."; exit 1 ;;
         esac
         IMAGE_URL="https://cloud.debian.org/images/cloud/$OS_VERSION/latest/$DISK_IMAGE"
         ;;
