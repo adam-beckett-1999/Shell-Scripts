@@ -4,6 +4,7 @@
 set -e
 set -o pipefail
 
+
 # Default values for parameters
 VMID="5000"
 VM_NAME="linux-cloudinit-template"
@@ -17,6 +18,64 @@ OS_TYPE=""
 OS_VERSION=""
 DISK_IMAGE=""
 IMAGE_URL=""
+
+# Interactive menu using whiptail if no arguments are provided
+if [ $# -eq 0 ]; then
+    if ! command -v whiptail >/dev/null 2>&1; then
+        echo "whiptail is required for the interactive menu. Install it with: apt install whiptail" >&2
+        exit 1
+    fi
+
+    VMID=$(whiptail --inputbox "Enter VM ID" 8 60 "$VMID" --title "VM ID" 3>&1 1>&2 2>&3)
+    VM_NAME=$(whiptail --inputbox "Enter VM Name" 8 60 "$VM_NAME" --title "VM Name" 3>&1 1>&2 2>&3)
+    MEMORY=$(whiptail --inputbox "Enter Memory (MB)" 8 60 "$MEMORY" --title "Memory" 3>&1 1>&2 2>&3)
+    CORES=$(whiptail --inputbox "Enter Number of CPU Cores" 8 60 "$CORES" --title "CPU Cores" 3>&1 1>&2 2>&3)
+    SOCKETS=$(whiptail --inputbox "Enter Number of CPU Sockets" 8 60 "$SOCKETS" --title "CPU Sockets" 3>&1 1>&2 2>&3)
+    CPU_TYPE=$(whiptail --inputbox "Enter CPU Type" 8 60 "$CPU_TYPE" --title "CPU Type" 3>&1 1>&2 2>&3)
+    BRIDGE=$(whiptail --inputbox "Enter Network Bridge" 8 60 "$BRIDGE" --title "Network Bridge" 3>&1 1>&2 2>&3)
+    STORAGE=$(whiptail --inputbox "Enter Storage Location" 8 60 "$STORAGE" --title "Storage" 3>&1 1>&2 2>&3)
+
+    OS_TYPE=$(whiptail --title "Select OS Type" --menu "Choose the OS type:" 15 60 4 \
+        "ubuntu" "Ubuntu" \
+        "debian" "Debian" \
+        "rocky" "Rocky Linux" \
+        3>&1 1>&2 2>&3)
+
+    case $OS_TYPE in
+        ubuntu)
+            OS_VERSION=$(whiptail --title "Select Ubuntu Version" --menu "Choose Ubuntu version:" 20 60 8 \
+                "18.04" "Bionic Beaver (LTS)" \
+                "18.10" "Cosmic Cuttlefish" \
+                "20.04" "Focal Fossa (LTS)" \
+                "20.10" "Groovy Gorilla" \
+                "22.04" "Jammy Jellyfish (LTS)" \
+                "22.10" "Kinetic Kudu" \
+                "23.04" "Lunar Lobster" \
+                "23.10" "Mantic Minotaur" \
+                "24.04" "Noble Numbat (LTS)" \
+                "24.10" "Oracular Oriole" \
+                "25.04" "Plucky Puffin" \
+                "25.10" "Questing Quokka" \
+                "26.04" "Resolute Raccoon (LTS)" \
+                3>&1 1>&2 2>&3)
+            ;;
+        debian)
+            OS_VERSION=$(whiptail --title "Select Debian Version" --menu "Choose Debian version:" 15 60 4 \
+                "10" "Buster" \
+                "11" "Bullseye" \
+                "12" "Bookworm" \
+                "13" "Trixie" \
+                3>&1 1>&2 2>&3)
+            ;;
+        rocky)
+            OS_VERSION=$(whiptail --title "Select Rocky Linux Version" --menu "Choose Rocky Linux version:" 12 60 3 \
+                "8" "Rocky Linux 8" \
+                "9" "Rocky Linux 9" \
+                "10" "Rocky Linux 10" \
+                3>&1 1>&2 2>&3)
+            ;;
+    esac
+fi
 
 # Function to display usage
 usage() {
