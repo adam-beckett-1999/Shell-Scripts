@@ -271,3 +271,34 @@ destroy_existing_vm
 create_vm_template
 
 echo "Your template for $OS_TYPE $OS_VERSION with VM ID $VMID and name $VM_NAME has been created successfully."
+
+# Post-template cloud-init configuration
+if whiptail --title "Cloud-Init User Setup" --yesno "Would you like to set a default username, password, and SSH key for this template?" 12 70; then
+    CLOUDINIT_USER=$(whiptail --inputbox "Enter the default username for cloud-init (e.g. root):" 10 70 "root" --title "Cloud-Init Username" 3>&1 1>&2 2>&3)
+    CLOUDINIT_PASS=$(whiptail --passwordbox "Enter the default password for $CLOUDINIT_USER (leave blank for no password):" 10 70 --title "Cloud-Init Password" 3>&1 1>&2 2>&3)
+    if whiptail --title "SSH Key" --yesno "Would you like to add an SSH public key for $CLOUDINIT_USER?" 10 70; then
+        if whiptail --title "SSH Key Input" --yesno "Paste the SSH public key? (No = load from file)" 10 70; then
+            CLOUDINIT_SSHKEY=$(whiptail --inputbox "Paste the SSH public key for $CLOUDINIT_USER:" 12 70 "" --title "SSH Public Key" 3>&1 1>&2 2>&3)
+        else
+            SSHKEY_FILE=$(whiptail --inputbox "Enter the path to the SSH public key file (e.g. /root/.ssh/id_rsa.pub):" 10 70 "" --title "SSH Key File" 3>&1 1>&2 2>&3)
+            if [ -f "$SSHKEY_FILE" ]; then
+                CLOUDINIT_SSHKEY=$(cat "$SSHKEY_FILE")
+            else
+                whiptail --title "File Not Found" --msgbox "File not found: $SSHKEY_FILE. Skipping SSH key." 10 60
+                CLOUDINIT_SSHKEY=""
+            fi
+        fi
+    else
+        CLOUDINIT_SSHKEY=""
+    fi
+
+    echo "Applying cloud-init settings to template..."
+    qm set "$VMID" --ciuser "$CLOUDINIT_USER"
+    if [ -n "$CLOUDINIT_PASS" ]; then
+        qm set "$VMID" --cipassword "$CLOUDINIT_PASS"
+    fi
+    if [ -n "$CLOUDINIT_SSHKEY" ]; then
+        qm set "$VMID" --sshkey <(echo "$CLOUDINIT_SSHKEY")
+    fi
+    echo "Cloud-init settings applied."
+fi
