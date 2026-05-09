@@ -161,14 +161,10 @@ while getopts "i:n:m:c:s:t:b:d:o:v:h" opt; do
     esac
 done
 
+
+# Robust storage existence check using pvesm status (skip header)
 check_storage_exists() {
-    # Use pvesh if available, fallback to parsing qm list output
-    if command -v pvesh >/dev/null 2>&1; then
-        pvesh get /storage | awk -F'"' '/"storage"/ {print $4}' | grep -Fxq "$STORAGE"
-    else
-        qm list >/dev/null 2>&1 # ensure qm is available
-        pvesm status | awk '{print $1}' | grep -Fxq "$STORAGE"
-    fi
+    pvesm status | awk 'NR>1 {print $1}' | grep -Fxq "$STORAGE"
 }
 
 # In non-interactive mode, check storage before proceeding
